@@ -1,6 +1,13 @@
 package com.zimmerbell.repaper;
 
+import java.awt.AWTException;
 import java.awt.Graphics2D;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
@@ -24,15 +31,45 @@ public class Repaper {
 	private final static String HOME = System.getProperty("user.home") + File.separator + ".repaper";
 	private final static int GAUSS_RADIUS = 15;
 	private final static float BRIGTHNESS = 0.5f;
+
 	private Source source;
 
-	public static void main(String[] args) throws MalformedURLException, IOException {
+	public static void main(String[] args) throws Exception {
 		Repaper repaper = new Repaper(new MuzeiSource());
 		repaper.update();
 	}
 
-	public Repaper(Source source) {
+	public Repaper(Source source) throws Exception {
 		this.source = source;
+
+		initTray();
+	}
+
+	private void initTray() throws Exception {
+		PopupMenu popup = new PopupMenu();
+		MenuItem mi;
+		
+		popup.add(mi = new MenuItem("Update"));
+		mi.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
+				try {
+					update();
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		});
+
+		popup.add(mi = new MenuItem("Exit"));
+		mi.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
+				System.exit(0);
+			}
+		});
+
+		TrayIcon trayIcon = new TrayIcon(ImageIO.read(Repaper.class.getResourceAsStream("/icon_16.png")), null, popup);
+		trayIcon.setImageAutoSize(true);
+		SystemTray.getSystemTray().add(trayIcon);
 	}
 
 	public void update() throws IOException {
@@ -155,7 +192,7 @@ public class Repaper {
 		} else {
 			kernel = new Kernel(1, size, data);
 		}
-		
+
 		// return new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
 		return new ConvolveOp(kernel);
 	}
