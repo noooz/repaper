@@ -17,7 +17,7 @@ public class MuzeiSource implements Source {
 	}
 
 	private String getData(String key) throws IOException {
-		if (data != null) {
+		if (data == null) {
 			update();
 		}
 		return data.getString(key);
