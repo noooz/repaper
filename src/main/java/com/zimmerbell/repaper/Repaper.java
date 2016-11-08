@@ -78,7 +78,7 @@ public class Repaper {
 	private void initScheduler() {
 		Trigger trigger = TriggerBuilder.newTrigger() //
 				.startNow() //
-				.withSchedule(CronScheduleBuilder.dailyAtHourAndMinute(0, 0).withMisfireHandlingInstructionFireAndProceed()) //
+				.withSchedule(CronScheduleBuilder.dailyAtHourAndMinute(5, 0).withMisfireHandlingInstructionFireAndProceed()) //
 				.build();
 		
 		
