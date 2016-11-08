@@ -33,9 +33,13 @@ public class UpdateJob implements Job {
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		LOG.info("update");
 		
-		Source source = (Source) context.getMergedJobDataMap().get(KEY_SOURCE);
+		Repaper repaper = Repaper.getInstance();
+		
+		Source source = repaper.getSource();
 
 		try {
+			source.update();
+			
 			BufferedImage image = ImageIO.read(new URL(source.getImageUri()).openStream());
 
 			File dir = new File(Repaper.HOME);
@@ -53,6 +57,7 @@ public class UpdateJob implements Job {
 			 */
 			SPI.INSTANCE.SystemParametersInfo(new UINT_PTR(SPI.SPI_SETDESKWALLPAPER), new UINT_PTR(0), file.getCanonicalPath(), new UINT_PTR(SPI.SPIF_UPDATEINIFILE | SPI.SPIF_SENDWININICHANGE));
 
+			repaper.triggerContentChanged();
 		} catch (Exception e) {
 			LOG.error(e.getMessage(), e);
 		}

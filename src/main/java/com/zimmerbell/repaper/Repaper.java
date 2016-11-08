@@ -7,6 +7,7 @@ import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
@@ -29,13 +30,20 @@ public class Repaper {
 	public final static float BRIGTHNESS  = 0.5f;
 	
 	private static final Logger LOG = LoggerFactory.getLogger(Repaper.class);
+	
+	private static Repaper repaperInstance;
 
+	private TrayIcon trayIcon;
 	private Source source;
 	private Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
 	private JobDetail updateJob = JobBuilder.newJob(UpdateJob.class).build();
 
 	public static void main(String[] args) throws Exception {
-		new Repaper(new MuzeiSource());
+		repaperInstance = new Repaper(new MuzeiSource());
+	}
+	
+	public static Repaper getInstance(){
+		return repaperInstance;
 	}
 
 	public Repaper(Source source) throws Exception {
@@ -54,8 +62,6 @@ public class Repaper {
 		
 		try {
 			scheduler.start();
-			
-			updateJob.getJobDataMap().put(UpdateJob.KEY_SOURCE, source);
 			scheduler.scheduleJob(updateJob, trigger);
 			
 			// trigger now
@@ -88,9 +94,23 @@ public class Repaper {
 			}
 		});
 
-		TrayIcon trayIcon = new TrayIcon(ImageIO.read(Repaper.class.getResourceAsStream("/icon_16.png")), null, popup);
+		trayIcon = new TrayIcon(ImageIO.read(Repaper.class.getResourceAsStream("/icon_16.png")), null, popup);
 		trayIcon.setImageAutoSize(true);
 		SystemTray.getSystemTray().add(trayIcon);
+	}
+	
+	public Source getSource() {
+		return source;
+	}
+	
+	public void triggerContentChanged(){
+		try {
+			trayIcon.setToolTip("\"" + source.getTitle() + "\"\n by " + source.getBy());
+			
+		} catch (IOException e) {
+			trayIcon.setToolTip(null);
+			logError(e);
+		}
 	}
 	
 
