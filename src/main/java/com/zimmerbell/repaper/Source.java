@@ -12,4 +12,6 @@ public interface Source {
 	public String getTitle() throws IOException;
 
 	public String getBy() throws IOException;
+
+	public String getDetailsUri() throws IOException;
 }

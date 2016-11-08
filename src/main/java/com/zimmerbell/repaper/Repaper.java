@@ -1,5 +1,6 @@
 package com.zimmerbell.repaper;
 
+import java.awt.Desktop;
 import java.awt.Graphics2D;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
@@ -13,6 +14,8 @@ import java.awt.image.Kernel;
 import java.awt.image.RescaleOp;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 
@@ -112,6 +115,21 @@ public class Repaper {
 				showOriginal();
 			}
 		});
+		
+		if(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)){
+			popup.add(mi = new MenuItem("Details"));
+			mi.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent event) {
+					try {
+						Desktop.getDesktop().browse(new URI(source.getDetailsUri()));
+					} catch (Exception e) {
+						logError(e);
+					}
+				}
+			});	
+		}
+		
+		popup.addSeparator();
 
 		popup.add(mi = new MenuItem("Exit"));
 		mi.addActionListener(new ActionListener() {

@@ -37,5 +37,10 @@ public class MuzeiSource implements Source {
 	public String getBy() throws IOException{
 		return getData("byline");
 	}
+	
+	@Override
+	public String getDetailsUri() throws IOException{
+		return getData("detailsUri");
+	}
 
 }
