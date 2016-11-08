@@ -34,17 +34,18 @@ public class Repaper {
 	public Repaper(Source source) {
 		this.source = source;
 	}
-	
 
 	public void update() throws IOException {
 		BufferedImage image = ImageIO.read(new URL(source.getImageUri()).openStream());
-		
+
+		File dir = new File(HOME);
+		dir.mkdirs();
+
+		ImageIO.write(image, "jpg", new File(dir, "current-original.jpg"));
+
 		image = blur(image);
 		image = darken(image);
-
-		File file = new File(HOME, "current.jpg");
-		file.getParentFile().mkdirs();
-
+		File file = new File(dir, "current.jpg");
 		ImageIO.write(image, "jpg", file);
 
 		/**
@@ -54,11 +55,8 @@ public class Repaper {
 	}
 
 	private BufferedImage blur(BufferedImage image) {
-		// float[] matrix = new float[400];
-		// for (int i = 0; i < 400; i++)
-		// matrix[i] = 1.0f / 400.0f;
-		// image = new ConvolveOp(new Kernel(20, 20, matrix)).filter(image,
-		// null);
+
+		// image = gauss(GAUSS_RADIUS).filter(image, null);
 
 		image = getGaussianBlurFilter(GAUSS_RADIUS, true).filter(image, null);
 		image = getGaussianBlurFilter(GAUSS_RADIUS, false).filter(image, null);
@@ -74,9 +72,49 @@ public class Repaper {
 
 		return image;
 	}
-	
-	
-	private BufferedImage darken(BufferedImage image){
+
+	/**
+	 * https://en.wikipedia.org/wiki/Gaussian_blur#Mathematics
+	 * 
+	 * @param radius
+	 * @return
+	 */
+	public static ConvolveOp gauss(final int radius) {
+
+		double sigma = ((2 * radius) + 1) / 6.0;
+
+		float[][] matrix = new float[(2 * radius) + 1][(2 * radius) + 1];
+		for (int x = 0; x <= radius; x++) {
+			for (int y = 0; y <= radius; y++) {
+				float d = (float) (1 / (2 * Math.PI * sigma * sigma) * Math.exp(-((x * x) + (y * y)) / (2 * sigma * sigma)));
+
+				matrix[radius + x][radius + y] = d;
+				matrix[radius + x][radius - y] = d;
+				matrix[radius - x][radius + y] = d;
+				matrix[radius - x][radius - y] = d;
+			}
+		}
+
+		for (int x = 0; x < matrix.length; x++) {
+			for (int y = 0; y < matrix[x].length; y++) {
+				System.out.print((x - radius) + "," + (y - radius) + "=" + matrix[x][y]);
+				System.out.print("\t");
+			}
+			System.out.println();
+		}
+
+		float[] data = new float[((2 * radius) + 1) * ((2 * radius) + 1)];
+		int d = 0;
+		for (int i = 0; i < matrix.length; i++) {
+			for (int j = 0; j < matrix[i].length; j++) {
+				data[d++] = matrix[i][j];
+			}
+		}
+
+		return new ConvolveOp(new Kernel((2 * radius) + 1, (2 * radius) + 1, data));
+	}
+
+	private BufferedImage darken(BufferedImage image) {
 		return new RescaleOp(BRIGTHNESS, 0, null).filter(image, null);
 	}
 
