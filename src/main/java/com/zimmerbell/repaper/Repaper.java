@@ -156,6 +156,8 @@ public class Repaper {
 		try {
 			LOG.info("update");
 			
+			source.update();
+			
 			BufferedImage image = ImageIO.read(new URL(source.getImageUri()).openStream());
 			
 			CURRENT_FILE_ORIGINAL.getParentFile().mkdir();
