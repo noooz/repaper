@@ -1,10 +1,12 @@
-package com.zimmerbell.repaper;
+package com.zimmerbell.repaper.sources;
 
 import java.io.IOException;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
+
+import com.zimmerbell.repaper.Source;
 
 public class MuzeiSource implements Source {
 	private final static String URL = "https://muzeiapi.appspot.com/featured";

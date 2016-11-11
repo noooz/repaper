@@ -15,7 +15,6 @@ import java.awt.image.RescaleOp;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 
@@ -40,6 +39,7 @@ import com.sun.jna.platform.win32.WinDef.UINT_PTR;
 import com.sun.jna.win32.StdCallLibrary;
 import com.sun.jna.win32.W32APIFunctionMapper;
 import com.sun.jna.win32.W32APITypeMapper;
+import com.zimmerbell.repaper.sources.MuzeiSource;
 
 public class Repaper {
 
@@ -62,6 +62,7 @@ public class Repaper {
 
 	public static void main(String[] args) throws Exception {
 		repaperInstance = new Repaper(new MuzeiSource());
+//		repaperInstance = new Repaper(new MomentumSource());
 	}
 	
 	public static Repaper getInstance(){
@@ -160,22 +161,25 @@ public class Repaper {
 			
 			BufferedImage image = ImageIO.read(new URL(source.getImageUri()).openStream());
 			
-			CURRENT_FILE_ORIGINAL.getParentFile().mkdir();
-			ImageIO.write(image, "jpg", CURRENT_FILE_ORIGINAL);
+			try{
+				CURRENT_FILE_ORIGINAL.getParentFile().mkdir();
+				ImageIO.write(image, "jpg", CURRENT_FILE_ORIGINAL);
+	
+				image = blur(image);
+				image = darken(image);
+				
+				CURRENT_FILE.getParentFile().mkdirs();
+				ImageIO.write(image, "jpg", CURRENT_FILE);
+				
+				trayIcon.setToolTip("\"" + source.getTitle() + "\"\n by " + source.getBy());
+				
+				setBackgroundImage(false);
 
-			image = blur(image);
-			image = darken(image);
-			
-			CURRENT_FILE.getParentFile().mkdirs();
-			ImageIO.write(image, "jpg", CURRENT_FILE);
-			
-			trayIcon.setToolTip("\"" + source.getTitle() + "\"\n by " + source.getBy());
-			
-			setBackgroundImage(false);
-
-			
-		} catch (IOException e) {
-			trayIcon.setToolTip(null);
+			} catch (Exception e) {
+				trayIcon.setToolTip(null);
+				logError(e);
+			}	
+		} catch (Exception e) {
 			logError(e);
 		}
 	}
@@ -221,7 +225,7 @@ public class Repaper {
 
 	private BufferedImage blur(BufferedImage image) {
 
-		// image = gauss(GAUSS_RADIUS).filter(image, null);
+//		 image = gauss(GAUSS_RADIUS).filter(image, null);
 
 		image = getGaussianBlurFilter(Repaper.GAUSS_RADIUS, true).filter(image, null);
 		image = getGaussianBlurFilter(Repaper.GAUSS_RADIUS, false).filter(image, null);
