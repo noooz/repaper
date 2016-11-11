@@ -74,17 +74,14 @@ public class Repaper {
 	private JobDetail updateJob = JobBuilder.newJob(UpdateJob.class).build();
 
 	public static void main(String[] args) throws Exception {
-		// repaperInstance = new Repaper(new MuzeiSource());
-		repaperInstance = new Repaper(new MomentumSource());
+		repaperInstance = new Repaper();
 	}
 
 	public static Repaper getInstance() {
 		return repaperInstance;
 	}
 
-	public Repaper(Source source) throws Exception {
-		this.source = source;
-
+	public Repaper() throws Exception {
 		initTray();
 		initScheduler();
 		initConfig();
@@ -97,7 +94,7 @@ public class Repaper {
 		} catch (FileNotFoundException e) {
 		}
 
-		switch (SourceType.valueOf(config.getProperty(CONFIG_SOURCE, SourceType.Momentum.name()))) {
+		switch (SourceType.valueOf(config.getProperty(CONFIG_SOURCE, SourceType.Muzei.name()))) {
 		case Muzei:
 			source = new MuzeiSource();
 			break;
