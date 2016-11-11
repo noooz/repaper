@@ -1,10 +1,12 @@
 package com.zimmerbell.repaper.sources;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 import org.json.JSONException;
@@ -18,16 +20,20 @@ public class MomentumSource implements Source {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(MomentumSource.class);
 	
-	private final static String sqliteFile = System.getProperty("user.home") + "\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Local Storage\\chrome-extension_laookkfknpbbblfpciffpaejjkokdgca_0.localstorage";
+	private final static String CHROME_FOLDER = System.getenv("LOCALAPPDATA") + "\\Google\\Chrome\\User Data\\Default";
+	private final static String EXTENSION_ID = "laookkfknpbbblfpciffpaejjkokdgca";
+	private final static String SQLITE_FILE = CHROME_FOLDER + "\\Local Storage\\chrome-extension_" + EXTENSION_ID + "_0.localstorage";
+	
 	
 	private JSONObject data;
 
 	@Override
 	public void update() throws Exception {
+		
 		data = new JSONObject();
 		
 		Class.forName("org.sqlite.JDBC");
-		Connection connection = DriverManager.getConnection("jdbc:sqlite:" + sqliteFile);
+		Connection connection = DriverManager.getConnection("jdbc:sqlite:" + SQLITE_FILE);
 		
 		try(Statement stmt = connection.createStatement()){
 			
@@ -60,7 +66,15 @@ public class MomentumSource implements Source {
 
 	@Override
 	public String getImageUri() throws Exception {
-		return getData("filename");
+		String filename = getData("filename");
+		if(!filename.startsWith("http")){
+			File[] files = new File(CHROME_FOLDER + File.separator + "Extensions" + File.separator + EXTENSION_ID).listFiles();
+			Arrays.sort(files);
+			String extensionHome = files[files.length - 1].getAbsolutePath();
+			
+			filename = extensionHome + File.separator + filename;
+		}
+		return filename;
 	}
 
 	@Override
