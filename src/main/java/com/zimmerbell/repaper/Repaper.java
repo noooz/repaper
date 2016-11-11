@@ -1,5 +1,6 @@
 package com.zimmerbell.repaper;
 
+import java.awt.CheckboxMenuItem;
 import java.awt.Desktop;
 import java.awt.Graphics2D;
 import java.awt.HeadlessException;
@@ -10,6 +11,8 @@ import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
@@ -26,8 +29,8 @@ import java.util.Properties;
 
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
-import org.apache.logging.log4j.util.Strings;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
@@ -85,9 +88,11 @@ public class Repaper {
 	}
 
 	public Repaper() throws Exception {
+		initConfig();
 		initTray();
 		initScheduler();
-		initConfig();
+		
+		update();
 	}
 
 	private void initConfig() throws IOException {
@@ -105,8 +110,6 @@ public class Repaper {
 			source = new MomentumSource();
 			break;
 		}
-
-		update();
 	}
 
 	private void initScheduler() {
@@ -133,11 +136,13 @@ public class Repaper {
 
 		Menu sourceMenu = new Menu("Source");
 		preferences.add(sourceMenu);
-
 		for (SourceType sourceType : SourceType.values()) {
 			sourceMenu.add(new ConfigMenuItem(sourceType.name(), CONFIG_SOURCE, sourceType));
 		}
-
+		
+		preferences.add(new CheckboxConfigMenuItem("Blur", "blur"));
+		preferences.add(new CheckboxConfigMenuItem("Darken", "darken"));
+		
 		popup.add(mi = new MenuItem("Update"));
 		mi.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
@@ -193,13 +198,19 @@ public class Repaper {
 	}
 
 	private void setConfig(String key, String value) {
+		LOG.info(key + "=" + value);
+		
 		config.setProperty(key, value);
 		CONFIG_FILE.getParentFile().mkdirs();
 		try {
 			config.store(new FileOutputStream(CONFIG_FILE), "");
-
 			initConfig();
-
+			SwingUtilities.invokeLater(new Runnable(){
+				@Override
+				public void run() {
+					update();					
+				}
+			});
 		} catch (Exception e) {
 			logError(e);
 		}
@@ -396,14 +407,29 @@ public class Repaper {
 		public ConfigMenuItem(String label, final String key, final Object value) {
 			super(label);
 
-			LOG.info(key + "=" + value);
-
 			addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent event) {
 					setConfig(key, value.toString());
 				}
 			});
 		}
+	}
+	
+	private class CheckboxConfigMenuItem extends CheckboxMenuItem{
+		private static final long serialVersionUID = 1L;
+
+		public CheckboxConfigMenuItem(String label, final String key) throws HeadlessException {
+			super(label, Boolean.valueOf(config.getProperty(key, "true")));
+			
+			addItemListener(new ItemListener() {
+				@Override
+				public void itemStateChanged(ItemEvent event) {
+					
+					setConfig(key, Boolean.valueOf(event.getStateChange() == ItemEvent.SELECTED).toString());
+				}
+			});
+		}
+		
 	}
 
 	/**
