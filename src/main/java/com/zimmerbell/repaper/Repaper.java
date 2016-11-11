@@ -27,6 +27,7 @@ import java.util.Properties;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
+import org.apache.logging.log4j.util.Strings;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
@@ -59,6 +60,8 @@ public class Repaper {
 	private final static File CURRENT_FILE_ORIGINAL = new File(HOME, "current-original.jpg");
 	private final static File CONFIG_FILE = new File(HOME, "repaper.conf");
 	private final static String CONFIG_SOURCE = "source";
+	private final static String CONFIG_BLUR = "blur";
+	private final static String CONFIG_DARKEN = "darken";
 
 	private static enum SourceType {
 		Muzei, Momentum
@@ -102,7 +105,7 @@ public class Repaper {
 			source = new MomentumSource();
 			break;
 		}
-		
+
 		update();
 	}
 
@@ -214,8 +217,12 @@ public class Repaper {
 				CURRENT_FILE_ORIGINAL.getParentFile().mkdir();
 				ImageIO.write(image, "jpg", CURRENT_FILE_ORIGINAL);
 
-				// image = blur(image);
-				// image = darken(image);
+				if (!config.getProperty(CONFIG_BLUR, "true").equals("false")) {
+					image = blur(image);
+				}
+				if (!config.getProperty(CONFIG_DARKEN, "true").equals("false")) {
+					image = darken(image);
+				}
 
 				CURRENT_FILE.getParentFile().mkdirs();
 				ImageIO.write(image, "jpg", CURRENT_FILE);
@@ -388,7 +395,7 @@ public class Repaper {
 
 		public ConfigMenuItem(String label, final String key, final Object value) {
 			super(label);
-			
+
 			LOG.info(key + "=" + value);
 
 			addActionListener(new ActionListener() {
@@ -396,7 +403,7 @@ public class Repaper {
 					setConfig(key, value.toString());
 				}
 			});
-		}		
+		}
 	}
 
 	/**
