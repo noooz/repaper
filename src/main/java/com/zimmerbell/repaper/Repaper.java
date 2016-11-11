@@ -30,6 +30,7 @@ import java.util.Properties;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 import org.quartz.CronScheduleBuilder;
 import org.quartz.JobBuilder;
@@ -73,6 +74,7 @@ public class Repaper {
 	private static Repaper repaperInstance;
 
 	private TrayIcon trayIcon;
+	private Menu preferences;
 	private Properties config;
 
 	private Source source;
@@ -131,9 +133,9 @@ public class Repaper {
 		PopupMenu popup = new PopupMenu();
 		MenuItem mi;
 
-		Menu preferences = new Menu("Preferences");
+		preferences = new Menu("Preferences");
 		popup.add(preferences);
-
+		
 		Menu sourceMenu = new Menu("Source");
 		preferences.add(sourceMenu);
 		for (SourceType sourceType : SourceType.values()) {
@@ -200,17 +202,29 @@ public class Repaper {
 	private void setConfig(String key, String value) {
 		LOG.info(key + "=" + value);
 		
+		preferences.setEnabled(false);
+		
 		config.setProperty(key, value);
 		CONFIG_FILE.getParentFile().mkdirs();
 		try {
 			config.store(new FileOutputStream(CONFIG_FILE), "");
 			initConfig();
-			SwingUtilities.invokeLater(new Runnable(){
+			
+			new SwingWorker<Void, Void>() {
 				@Override
-				public void run() {
-					update();					
+				protected Void doInBackground() throws Exception {
+					update();
+					return null;
 				}
-			});
+				
+				@Override
+				protected void done() {
+					super.done();
+					
+					preferences.setEnabled(true);
+				}
+				
+			}.execute();
 		} catch (Exception e) {
 			logError(e);
 		}
@@ -424,7 +438,6 @@ public class Repaper {
 			addItemListener(new ItemListener() {
 				@Override
 				public void itemStateChanged(ItemEvent event) {
-					
 					setConfig(key, Boolean.valueOf(event.getStateChange() == ItemEvent.SELECTED).toString());
 				}
 			});
