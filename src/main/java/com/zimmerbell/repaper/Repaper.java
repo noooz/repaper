@@ -309,7 +309,7 @@ public class Repaper {
 
 	public static void logError(Throwable e) {
 		LOG.error(e.getMessage(), e);
-		JOptionPane.showMessageDialog(null, e.getMessage());
+		JOptionPane.showMessageDialog(null, e + ": " + e.getMessage());
 	}
 
 	private BufferedImage blur(BufferedImage image) {
