@@ -71,7 +71,7 @@ public class MomentumSource implements Source {
 	@Override
 	public String getImageUri() throws Exception {
 		String filename = getData("filename");
-		if(!filename.startsWith("http")){
+		if(filename != null && !filename.startsWith("http")){
 			File[] files = new File(CHROME_FOLDER + File.separator + "Extensions" + File.separator + EXTENSION_ID).listFiles();
 			Arrays.sort(files);
 			String extensionHome = files[files.length - 1].getAbsolutePath();

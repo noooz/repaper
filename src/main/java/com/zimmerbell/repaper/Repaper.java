@@ -242,8 +242,12 @@ public class Repaper {
 			LOG.info("update");
 
 			source.update();
+			String imageUri = source.getImageUri();
+			if(imageUri == null){
+				return;
+			}
 
-			BufferedImage image = ImageIO.read(new URL(source.getImageUri()).openStream());
+			BufferedImage image = ImageIO.read(new URL(imageUri).openStream());
 
 			try {
 				CURRENT_FILE_ORIGINAL.getParentFile().mkdir();
