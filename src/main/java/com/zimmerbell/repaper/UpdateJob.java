@@ -27,6 +27,8 @@ public class UpdateJob implements Job {
 		try {
 			Repaper.getInstance().update();
 		} catch (Exception e) {
+			LOG.warn(e.getMessage(), e);
+			
 			final int retries = data.containsKey(KEY_COUNT) ? data.getIntValue(KEY_COUNT) : 0;
 			if (retries < MAX_RETRIES) {
 				data.put(KEY_COUNT, retries + 1);
