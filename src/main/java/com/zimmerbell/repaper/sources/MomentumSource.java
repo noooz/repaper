@@ -20,24 +20,38 @@ public class MomentumSource implements Source {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(MomentumSource.class);
 	
-	private final static String CHROME_FOLDER = System.getenv("LOCALAPPDATA") + "\\Google\\Chrome\\User Data\\Default";
+	private final static String CHROME_PROFILES = System.getenv("LOCALAPPDATA") + "\\Google\\Chrome\\User Data";
 	private final static String EXTENSION_ID = "laookkfknpbbblfpciffpaejjkokdgca";
-	private final static String SQLITE_FILE = CHROME_FOLDER + "\\Local Storage\\chrome-extension_" + EXTENSION_ID + "_0.localstorage";
+	private final static String SQLITE_FILE_PATH = "\\Local Storage\\chrome-extension_" + EXTENSION_ID + "_0.localstorage";
 	
 	
+	private String chromeProfileFolder;
 	private JSONObject data;
 	
-	private String getSqliteFile() {
-		return SQLITE_FILE;
+	public MomentumSource() {
+		long t = 0;
+		for(File profileFolder : new File(CHROME_PROFILES).listFiles()) {
+			File sqliteFile = new File(profileFolder, SQLITE_FILE_PATH);
+			if(sqliteFile.exists() && sqliteFile.length() > 0 && (t < sqliteFile.lastModified())) {
+				t = sqliteFile.lastModified();
+				chromeProfileFolder = profileFolder.getAbsolutePath();
+			}
+		}
+		LOG.info("using chrome profile: {}", chromeProfileFolder);
 	}
 	
+	
 	private String getChromeProfileFolder() {
-		return CHROME_FOLDER;
+		return chromeProfileFolder;
+	}
+	
+	private String getSqliteFile() {
+		String chromeProfileFolder = getChromeProfileFolder();
+		return chromeProfileFolder == null ? null : chromeProfileFolder + SQLITE_FILE_PATH;
 	}
 	
 	public boolean exists(){
-		File file = new File(getSqliteFile());
-		return file.exists() && file.length() > 0;
+		return getSqliteFile() != null;
 	}
 
 	@Override
@@ -81,7 +95,7 @@ public class MomentumSource implements Source {
 	public String getImageUri() throws Exception {
 		String filename = getData("filename");
 		if(filename != null && !filename.startsWith("http")){
-			File[] files = new File(getChromeProfileFolder() + File.separator + "Extensions" + File.separator + EXTENSION_ID).listFiles();
+			File[] files = new File(getChromeProfileFolder() + "\\Extensions\\" + EXTENSION_ID).listFiles();
 			Arrays.sort(files);
 			String extensionHome = files[files.length - 1].getAbsolutePath();
 			
