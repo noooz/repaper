@@ -102,7 +102,7 @@ public class Repaper {
 		try {
 			config.load(new FileInputStream(CONFIG_FILE));
 		} catch (FileNotFoundException e) {
-			if(MomentumSource.exists()){
+			if(new MomentumSource().exists()){
 				config.setProperty(CONFIG_SOURCE, SourceType.Momentum.name());
 				config.setProperty(CONFIG_BLUR, Boolean.FALSE.toString());
 				config.setProperty(CONFIG_DARKEN, Boolean.FALSE.toString());

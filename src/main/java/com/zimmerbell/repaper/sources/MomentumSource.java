@@ -27,8 +27,16 @@ public class MomentumSource implements Source {
 	
 	private JSONObject data;
 	
-	public static boolean exists(){
-		File file = new File(SQLITE_FILE);
+	private String getSqliteFile() {
+		return SQLITE_FILE;
+	}
+	
+	private String getChromeProfileFolder() {
+		return CHROME_FOLDER;
+	}
+	
+	public boolean exists(){
+		File file = new File(getSqliteFile());
 		return file.exists() && file.length() > 0;
 	}
 
@@ -38,7 +46,7 @@ public class MomentumSource implements Source {
 		data = new JSONObject();
 		
 		Class.forName("org.sqlite.JDBC");
-		Connection connection = DriverManager.getConnection("jdbc:sqlite:" + SQLITE_FILE);
+		Connection connection = DriverManager.getConnection("jdbc:sqlite:" + getSqliteFile());
 		
 		try(Statement stmt = connection.createStatement()){
 			
@@ -73,7 +81,7 @@ public class MomentumSource implements Source {
 	public String getImageUri() throws Exception {
 		String filename = getData("filename");
 		if(filename != null && !filename.startsWith("http")){
-			File[] files = new File(CHROME_FOLDER + File.separator + "Extensions" + File.separator + EXTENSION_ID).listFiles();
+			File[] files = new File(getChromeProfileFolder() + File.separator + "Extensions" + File.separator + EXTENSION_ID).listFiles();
 			Arrays.sort(files);
 			String extensionHome = files[files.length - 1].getAbsolutePath();
 			
