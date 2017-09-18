@@ -28,7 +28,8 @@ public class MomentumSource implements Source {
 	private JSONObject data;
 	
 	public static boolean exists(){
-		return new File(SQLITE_FILE).exists();
+		File file = new File(SQLITE_FILE);
+		return file.exists() && file.length() > 0;
 	}
 
 	@Override
