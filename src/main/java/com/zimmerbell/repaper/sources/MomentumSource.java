@@ -73,7 +73,6 @@ public class MomentumSource implements Source {
 		data = new JSONObject();
 
 		File tempDir = Files.createTempDir();
-//		File tempDir = new File("C:\\Users\\zimmermann\\AppData\\Local\\Temp\\1507708131562-0");
 		System.out.println(tempDir);
 		try {
 			FileUtils.copyDirectory(getLevelDBFile(), tempDir);
@@ -105,7 +104,7 @@ public class MomentumSource implements Source {
 			}
 
 		} finally {
-//			FileUtils.deleteDirectory(tempDir);
+			FileUtils.deleteDirectory(tempDir);
 		}
 	}
 
