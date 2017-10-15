@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import org.quartz.CronScheduleBuilder;
@@ -463,8 +462,7 @@ public class Repaper {
 		long SPI_SETDESKWALLPAPER = 20;
 		long SPIF_UPDATEINIFILE = 0x01;
 		long SPIF_SENDWININICHANGE = 0x02;
-
-		SPI INSTANCE = (SPI) Native.loadLibrary("user32", SPI.class, new HashMap<Object, Object>() {
+		SPI INSTANCE = (SPI) Native.loadLibrary("user32", SPI.class, new HashMap<String, Object>() {
 			private static final long serialVersionUID = 1L;
 
 			{
