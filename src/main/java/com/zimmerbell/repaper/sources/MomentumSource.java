@@ -1,6 +1,7 @@
 package com.zimmerbell.repaper.sources;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -104,7 +105,11 @@ public class MomentumSource implements Source {
 			}
 
 		} finally {
-			FileUtils.deleteDirectory(tempDir);
+			try {
+				FileUtils.deleteDirectory(tempDir);
+			}catch(IOException e) {
+				LOG.error(e.getMessage(), e);
+			}
 		}
 	}
 
