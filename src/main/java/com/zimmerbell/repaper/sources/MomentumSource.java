@@ -2,6 +2,7 @@ package com.zimmerbell.repaper.sources;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -11,26 +12,23 @@ import java.util.Arrays;
 import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
-import org.iq80.leveldb.DB;
-import org.iq80.leveldb.DBIterator;
-import org.iq80.leveldb.Options;
-import org.iq80.leveldb.impl.Iq80DBFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.iq80.leveldb.*;
+import static org.fusesource.leveldbjni.JniDBFactory.*;
 
-import com.google.common.io.Files;
 import com.zimmerbell.repaper.Source;
 
 public class MomentumSource implements Source {
 
 	private static final Logger LOG = LoggerFactory.getLogger(MomentumSource.class);
 
-	private final static String CHROME_PROFILES = System.getenv("LOCALAPPDATA") + "\\Google\\Chrome\\User Data";
+	public final static String CHROME_PROFILES = System.getenv("LOCALAPPDATA") + "\\Google\\Chrome\\User Data";
+	public final static String LEVELDB_PATH = "\\Local Storage\\leveldb";
 	private final static String EXTENSION_ID = "laookkfknpbbblfpciffpaejjkokdgca";
 	private final static String SQLITE_FILE_PATH = "\\Local Storage\\chrome-extension_" + EXTENSION_ID + "_0.localstorage";
-	private final static String LEVELDB_PATH = "\\Local Storage\\leveldb";
 
 	private String chromeProfileFolder;
 	private JSONObject data;
@@ -73,7 +71,7 @@ public class MomentumSource implements Source {
 	public void updateFromLevelDB() throws Exception {
 		data = new JSONObject();
 
-		File tempDir = Files.createTempDir();
+		File tempDir = Files.createTempDirectory("leveldb").toFile();
 		System.out.println(tempDir);
 		try {
 			FileUtils.copyDirectory(getLevelDBFile(), tempDir);
@@ -83,31 +81,30 @@ public class MomentumSource implements Source {
 				}
 			}
 
-			try (DB db = Iq80DBFactory.factory.open(tempDir, new Options()); DBIterator iterator = db.iterator()) {
+			try (DB db = factory.open(tempDir, new Options()); DBIterator iterator = db.iterator()) {
 				final String KEY_PREFIX = "_chrome-extension://" + EXTENSION_ID;
-				for (iterator.seek(Iq80DBFactory.bytes(KEY_PREFIX)); iterator.hasNext(); iterator.next()) {
-					String key = Iq80DBFactory.asString(iterator.peekNext().getKey());
+				for (iterator.seek(bytes(KEY_PREFIX)); iterator.hasNext(); iterator.next()) {
+					String key = asString(iterator.peekNext().getKey());
 					if (!key.startsWith(KEY_PREFIX)) {
 						break;
 					}
 					key = key.substring(key.indexOf(1) + 1);
 
 					if (key.equals(getMomentumKey())) {
-						String value = Iq80DBFactory.asString(iterator.peekNext().getValue());
+						String value = asString(iterator.peekNext().getValue());
 						value = value.substring(1);
 
 						LOG.info(key);
 						data = new JSONObject(value);
 						LOG.info(data.toString());
 					}
-
 				}
 			}
 
 		} finally {
 			try {
 				FileUtils.deleteDirectory(tempDir);
-			}catch(IOException e) {
+			} catch (IOException e) {
 				LOG.error(e.getMessage(), e);
 			}
 		}
