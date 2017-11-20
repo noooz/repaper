@@ -84,10 +84,10 @@ public class MomentumSource implements Source {
 
 	@Override
 	public void update() throws Exception {
-		if(updateFromChromeLevelDB()) {
+		if(updateFromFirefoxSqlite()) {
 			return;
 		}
-		if(updateFromFirefoxSqlite()) {
+		if(updateFromChromeLevelDB()) {
 			return;
 		}
 	}
