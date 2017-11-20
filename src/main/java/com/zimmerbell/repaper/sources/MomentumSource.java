@@ -78,7 +78,8 @@ public class MomentumSource implements Source {
 	}
 
 	public boolean exists() {
-		return getChromeLevelDBFile() != null;
+		return getChromeLevelDBFile() != null
+				|| getFirefoxSqliteFile() != null;
 	}
 
 	@Override
@@ -92,6 +93,10 @@ public class MomentumSource implements Source {
 	}
 
 	public boolean updateFromChromeLevelDB() throws Exception {
+		if(getChromeLevelDBFile() == null) {
+			return false;
+		}
+		
 		data = new JSONObject();
 
 		File tempDir = Files.createTempDirectory("leveldb").toFile();
@@ -137,11 +142,14 @@ public class MomentumSource implements Source {
 	}
 
 	public boolean updateFromFirefoxSqlite() throws Exception {
+		String sqliteFile = getFirefoxSqliteFile();
+		if(sqliteFile == null) {
+			return false;
+		}
+		
 		data = new JSONObject();
 
 		Class.forName("org.sqlite.JDBC");
-
-		String sqliteFile = getFirefoxSqliteFile();
 		LOG.info("sqliteFile: " + sqliteFile);
 		Connection connection = DriverManager.getConnection("jdbc:sqlite:" + sqliteFile);
 
