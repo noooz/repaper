@@ -15,7 +15,7 @@ import com.zimmerbell.repaper.sources.MomentumSource;
 
 @Test
 public class ReadLevelDBTest {
-	private final static String LEVELDB_DIR = MomentumSource.CHROME_PROFILES + File.separator + "Default" + MomentumSource.LEVELDB_PATH;
+	private final static String LEVELDB_DIR = MomentumSource.CHROME_PROFILES + File.separator + "Default" + MomentumSource.CHROME_LEVELDB_PATH;
 
 	public void testOpenLevelDB() throws IOException {
 		File tempDir = Files.createTempDirectory("leveldb").toFile();
