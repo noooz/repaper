@@ -39,24 +39,31 @@ public class MomentumSource implements Source {
 		long t;
 		
 		t = 0;
-		for (File profileFolder : new File(CHROME_PROFILES).listFiles()) {
-			File extensionDir = new File(profileFolder, "Extensions\\" + CHROME_EXTENSION_ID);
-			if (extensionDir.exists() && extensionDir.length() > 0 && (extensionDir.lastModified() > t)) {
-				t = extensionDir.lastModified();
-				chromeProfileFolder = profileFolder.getAbsolutePath();
+		File chromeProfiles = new File(CHROME_PROFILES);
+		if(chromeProfiles.exists()) {
+			for (File profileFolder : chromeProfiles.listFiles()) {
+				LOG.info("chrome profile: {}", profileFolder);
+				File extensionDir = new File(profileFolder, "Extensions\\" + CHROME_EXTENSION_ID);
+				if (extensionDir.exists() && (extensionDir.lastModified() > t)) {
+					t = extensionDir.lastModified();
+					chromeProfileFolder = profileFolder.getAbsolutePath();
+				}
 			}
+			LOG.info("using chrome profile: {}", chromeProfileFolder);
 		}
-		LOG.info("using chrome profile: {}", chromeProfileFolder);
 		
 		t = 0;
-		for (File profileFolder : new File(FIREFOX_PROFILES).listFiles()) {
-			File sqliteFile = new File(profileFolder, FIREFOX_SQLITE_FILE_PATH);
-			if (sqliteFile.exists() && sqliteFile.lastModified() > t) {
-				t = sqliteFile.lastModified();
-				firefoxProfileFolder = profileFolder.getAbsolutePath();
+		File firefoxProfiles = new File(FIREFOX_PROFILES);
+		if(firefoxProfiles.exists()) {
+			for (File profileFolder : firefoxProfiles.listFiles()) {
+				File sqliteFile = new File(profileFolder, FIREFOX_SQLITE_FILE_PATH);
+				if (sqliteFile.exists() && sqliteFile.lastModified() > t) {
+					t = sqliteFile.lastModified();
+					firefoxProfileFolder = profileFolder.getAbsolutePath();
+				}
 			}
+			LOG.info("using firefox profile: {}", firefoxProfileFolder);
 		}
-		LOG.info("using firefox profile: {}", firefoxProfileFolder);
 	}
 
 	private String getChromeProfileFolder() {
